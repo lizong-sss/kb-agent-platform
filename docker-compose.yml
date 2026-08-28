@@ -9,7 +9,7 @@ services:
       MYSQL_DATABASE: kb_agent
       TZ: Asia/Shanghai
     ports:
-      - "3306:3306"
+      - "3307:3306"  # 宿主机 3306 被本地 MySQL 占用，容器 MySQL 映射到 3307
     volumes:
       - ./volumes/mysql:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci

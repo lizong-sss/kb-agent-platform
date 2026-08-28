@@ -13,9 +13,9 @@ class Settings(BaseSettings):
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com"
     LLM_MODEL: str = "deepseek-chat"
 
-    # MySQL
+    # MySQL（Docker 容器映射到宿主机 3307，本机 3306 是本地 MySQL）
     MYSQL_HOST: str = "127.0.0.1"
-    MYSQL_PORT: int = 3306
+    MYSQL_PORT: int = 3307
     MYSQL_USER: str = "root"
     MYSQL_PASSWORD: str = "root123"
     MYSQL_DB: str = "kb_agent"

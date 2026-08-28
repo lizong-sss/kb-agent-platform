@@ -29,6 +29,10 @@ volumes/
 
 # 本地私人笔记
 local-notes/
+local-笔记/
+
+# AI 工具本地数据
+.zcode/
 
 # 模型文件缓存
 models_cache/
