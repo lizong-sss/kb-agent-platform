@@ -1,32 +1,1 @@
-# Web 框架
-fastapi
-uvicorn[standard]
-python-multipart
-
-# 配置与校验
-pydantic
-pydantic-settings
-python-dotenv
-
-# 数据库
-sqlalchemy
-pymysql
-redis
-pymilvus
-
-# 文档解析
-pypdf
-python-docx
-openpyxl
-
-# RAG / LLM
-sentence-transformers
-langchain-text-splitters
-langchain-openai
-openai
-
-# 安全
-pyjwt
-
-# 测试与脚本
-httpx
+# Web 框架fastapiuvicorn[standard]python-multipart# 配置与校验pydanticpydantic-settingspython-dotenv# 数据库sqlalchemypymysqlredispymilvus# 文档解析pypdfpython-docxopenpyxl# RAG / LLMsentence-transformerslangchain-text-splitterslangchain-openaiopenai# 安全pyjwt# 测试与脚本httpx
