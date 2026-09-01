@@ -38,4 +38,4 @@ def index():
 @app.get("/health", tags=["system"])
 def health_check():
     """健康检查：部署后用于探活"""
-    return {"status": "ok", "app": settings.APP_NAME, "version": app.version}
+    return {"status": "ok", "app": settings.APP_NAME, "vgit add .ersion": app.version}
