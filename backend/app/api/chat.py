@@ -49,13 +49,13 @@ def ask(
     if cached:
         return AskResponse(answer=cached, conversation_id=req.conversation_id or 0, cached=True)
 
-    # 2. 会话：存在则校验归属，不存在则新建
+    # 2. 会话：存在则校验归属，不存在则新建（标题取首问前 30 字，供会话列表展示）
     if req.conversation_id:
         conv = conv_service.get_conversation(db, req.conversation_id, user.id)
         if conv is None:
             raise HTTPException(status_code=404, detail="会话不存在")
     else:
-        conv = conv_service.create_conversation(db, user.id)
+        conv = conv_service.create_conversation(db, user.id, title=req.question[:30])
 
     # 3. 拼历史 + 当前问题 → Agent（历史窗口 4 条 = 近 2 轮：
     #    历史越长，模型越倾向模仿历史"直接回答"而跳过工具调用）
@@ -88,7 +88,7 @@ def ask_stream(
         if conv is None:
             raise HTTPException(status_code=404, detail="会话不存在")
     else:
-        conv = conv_service.create_conversation(db, user.id)
+        conv = conv_service.create_conversation(db, user.id, title=req.question[:30])
 
     history = conv_service.get_history(db, conv.id, limit=4)
     messages = history + [{"role": "user", "content": req.question}]

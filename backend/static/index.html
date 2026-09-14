@@ -58,6 +58,11 @@
   .doc-item { padding: 8px 10px; background: var(--panel2); border-radius: 8px; margin-bottom: 8px;
     display: flex; justify-content: space-between; align-items: center; }
   .doc-item .ok { color: var(--ok); font-size: 12px; }
+  .conv-list { max-height: 200px; overflow-y: auto; font-size: 12px; }
+  .conv-item { padding: 7px 10px; background: var(--panel2); border: 1px solid transparent; border-radius: 8px;
+    margin-bottom: 6px; cursor: pointer; color: var(--muted); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  .conv-item:hover, .conv-item.active { color: var(--text); border-color: var(--accent); }
   .tip { font-size: 12px; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--line); padding-top: 12px; }
 
   main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -111,7 +116,7 @@
 <div id="app-view">
   <header>
     <div class="logo">企业知识库 <span>AI Agent</span> 平台</div>
-    <div class="user"><span id="whoami"></span><button onclick="logout()">退出登录</button></div>
+    <div class="user"><span id="whoami"></span><button onclick="newConversation()">＋ 新建对话</button><button onclick="logout()">退出登录</button></div>
   </header>
   <div class="layout">
     <aside>
@@ -121,6 +126,8 @@
       </div>
       <input type="file" id="file-input" hidden accept=".pdf,.md,.txt">
       <div class="doc-list" id="doc-list"></div>
+      <h3 style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px;">历史会话</h3>
+      <div class="conv-list" id="conv-list"></div>
       <div class="tip">💡 试试问：<br>· 员工年假有多少天？<br>· 一线城市住宿报销标准？<br>· 张三是什么部门的？<br>· 现在几点了？</div>
     </aside>
     <main>
@@ -187,6 +194,7 @@ function enterApp() {
   document.getElementById('app-view').style.display = 'flex';
   document.getElementById('whoami').textContent = '👤 ' + USERNAME;
   addMsg('ai', '你好，' + USERNAME + '！我是企业知识库助手。请先在左侧上传文档建立知识库，然后就可以向我提问了。\n我能调用 6 个工具：知识库检索、SQL 查询、人员查询、政策查询、邮件发送、时间查询。');
+  loadConversations();
 }
 
 // ---------- 聊天 ----------
@@ -267,6 +275,7 @@ async function send() {
         }
         else if (evt.type === 'done') {
           cursor.remove();
+          loadConversations();
           if (evt.sources && evt.sources.length) {
             const s = document.createElement('span');
             s.className = 'src'; s.textContent = '📎 来源：' + evt.sources.join('、');
@@ -306,6 +315,47 @@ async function uploadFile(file) {
       addMsg('ai', '上传失败：' + (data.detail || resp.status));
     }
   } catch (e) { item.querySelector('.ok').textContent = '失败'; }
+}
+
+// ---------- 会话管理 ----------
+function newConversation() {
+  CONV_ID = null;
+  document.getElementById('chat').innerHTML = '';
+  addMsg('ai', '已开始新对话，请提问。');
+  loadConversations();
+}
+
+async function loadConversations() {
+  try {
+    const resp = await fetch(API + '/chat/conversations', { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+    if (!resp.ok) return;
+    const list = await resp.json();
+    const box = document.getElementById('conv-list');
+    box.innerHTML = '';
+    list.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'conv-item' + (c.id === CONV_ID ? ' active' : '');
+      div.textContent = c.title + ' · ' + c.created_at;
+      div.title = c.title;
+      div.onclick = () => openConversation(c.id);
+      box.appendChild(div);
+    });
+  } catch (e) { /* 列表加载失败不干扰聊天主流程 */ }
+}
+
+async function openConversation(id) {
+  try {
+    const resp = await fetch(API + '/chat/conversations/' + id + '/messages',
+      { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    CONV_ID = id;
+    document.getElementById('chat').innerHTML = '';
+    data.messages.forEach(m => {
+      if (m.role === 'user' || m.role === 'assistant') addMsg(m.role, m.content);
+    });
+    loadConversations();
+  } catch (e) {}
 }
 
 // ---------- 事件绑定 ----------
